@@ -1,5 +1,10 @@
 wp_bot v0.01a
 
+Usage:
+    Command: (Use those at the root directory of the project.)
+        npm start
+        node index.js
+
 Features:
 1) Sends messages
 2) Deletes used contacts and tracks non-used ones
