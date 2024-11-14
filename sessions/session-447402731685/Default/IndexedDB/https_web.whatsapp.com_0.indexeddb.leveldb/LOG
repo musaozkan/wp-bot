@@ -1,0 +1,13 @@
+2024/11/14-20:10:14.173 f903 Reusing MANIFEST /Users/ozkanmus/Desktop/personal_projects/wp_bot/sessions/session-447402731685/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2024/11/14-20:10:14.173 f903 Recovering log #155
+2024/11/14-20:10:14.182 f903 Reusing old log /Users/ozkanmus/Desktop/personal_projects/wp_bot/sessions/session-447402731685/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000155.log 
+2024/11/14-20:10:16.244 f903 Level-0 table #160: started
+2024/11/14-20:10:16.253 f903 Level-0 table #160: 240343 bytes OK
+2024/11/14-20:10:16.261 f903 Delete type=0 #155
+2024/11/14-20:10:16.262 f903 Manual compaction at level-0 from '\x005\x00\x00\x00' @ 72057594037927935 : 1 .. '\x006\x00\x00\x00' @ 0 : 0; will stop at (end)
+2024/11/14-20:10:16.328 16903 Compacting 1@1 + 1@2 files
+2024/11/14-20:10:16.368 16903 Generated table #161@1: 44104 keys, 1750235 bytes
+2024/11/14-20:10:16.368 16903 Compacted 1@1 + 1@2 files => 1750235 bytes
+2024/11/14-20:10:16.376 16903 compacted to: files[ 0 0 1 0 0 0 0 ]
+2024/11/14-20:10:16.377 16903 Delete type=2 #160
+2024/11/14-20:10:16.377 16903 Delete type=2 #157
