@@ -1,19 +1,20 @@
+// src/utils.js
 const fs = require('fs');
 const path = require('path');
 
-// Define the path to the logs file in the data directory
+// Logs dosyasının veri dizinindeki yolu tanımlayın
 const logFilePath = path.join(__dirname, '../data/logs.txt');
 
-// Ensure the data directory exists
+// Veri dizininin mevcut olduğundan emin olun
 if (!fs.existsSync(path.dirname(logFilePath))) {
     fs.mkdirSync(path.dirname(logFilePath), { recursive: true });
 }
 
-function logToFile(message, level = 'INFO') {
+function logToFile(message, level = 'BİLGİ') {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] [${level}] ${message}\n`;
     fs.appendFileSync(logFilePath, logMessage);
-    console.log(logMessage.trim());
+    console.log(logMessage.trim()); // Gerçek zamanlı izleme için ayrıca konsola çıktı ver
 }
 
 module.exports = { logToFile };

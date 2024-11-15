@@ -3,7 +3,7 @@ const path = require('path');
 const { logToFile } = require('./utils');
 
 // Function to take a screenshot of the currently active chat window
-async function takeScreenshotOfChat(client, phoneNumber) {
+async function outputPageStructure(client, phoneNumber) {
     try {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const screenshotPath = path.join(__dirname, `../screenshots/${phoneNumber}-${timestamp}.png`);
@@ -25,4 +25,4 @@ async function takeScreenshotOfChat(client, phoneNumber) {
     }
 }
 
-module.exports = { takeScreenshotOfChat };
+module.exports = { outputPageStructure };

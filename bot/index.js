@@ -1,15 +1,16 @@
+// index.js
 const path = require('path');
-const sendMessages = require(path.join(__dirname, './src/sendMessages'));
-const settings = require(path.join(__dirname, './config/settings.json'));
-const initializeClient = require(path.join(__dirname, './src/client'));
-const { outputPageStructure } = require(path.join(__dirname, './src/screenshotHandler'));
+const sendMessages = require('./src/sendMessages');
+const settings = require('./config/settings.json');
+const initializeClient = require('./src/client');
+const { outputPageStructure } = require('./src/screenshotHandler');
 
-// Start the dynamic sessions
+// Dinamik oturumları başlat
 async function startDynamicSessions() {
     const accountPromises = settings.accounts.map((accountConfig) =>
         new Promise((resolve) => {
             initializeClient(accountConfig, async (client) => {
-                await outputPageStructure(client); // Optional for debugging purposes
+                await outputPageStructure(client);
                 await sendMessages(client, accountConfig);
                 resolve();
             });
@@ -17,7 +18,7 @@ async function startDynamicSessions() {
     );
 
     await Promise.all(accountPromises);
-    console.log('All WhatsApp sessions have been initialized and completed messaging.');
+    console.log('Tüm WhatsApp oturumları başlatıldı ve mesaj gönderimi tamamlandı.');
 }
 
 startDynamicSessions();
