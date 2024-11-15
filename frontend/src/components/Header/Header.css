@@ -1,0 +1,48 @@
+.header-card {
+  background-color: #f4f4f4;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 20px 20px;
+  margin: 12px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.whatsapp-icon {
+  width: 36px;
+  height: 36px;
+  margin-right: 16px;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0a7855;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.navbar .nav-link {
+  color: #0a7855;
+  font-weight: 500;
+  margin: 0 12px;
+  transition: color 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+  color: #128c7e;
+}
+
+.btn-outline-success {
+  color: #128c7e;
+  border-color: #128c7e;
+}
+
+.btn-outline-success:hover {
+  background-color: #128c7e;
+  color: white;
+}
