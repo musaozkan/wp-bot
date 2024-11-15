@@ -5,7 +5,7 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import ForgotPassword from "./pages/ForgotPassword";
 import Header from "./components/Header/Header";
-import Home from "./pages/Home/Home";
+import Home from "./pages/Home";
 import AuthLayout from "./components/AuthLayout/AuthLayout";
 import "./App.css";
 
