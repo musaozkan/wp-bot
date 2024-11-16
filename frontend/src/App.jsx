@@ -50,7 +50,7 @@ function App() {
     const response = await fakeLogoutApi();
     if (response.success) {
       setLoggedIn(false);
-      navigate("/sign-in"); // Redirect to sign-in after logout
+      navigate("/sign-in");
     }
   };
 
@@ -58,7 +58,11 @@ function App() {
 
   const authenticatedRoutes = (
     <>
-      <Header title="WhatsApp" onLogout={handleLogout} navLinks={navLinks} />
+      <Header
+        title="WhatsApp Bot"
+        onLogout={handleLogout}
+        navLinks={navLinks}
+      />
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
