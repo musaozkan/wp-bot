@@ -18,7 +18,7 @@ function CreateTemplateModal({
 
   useEffect(() => {
     if (template) {
-      setTemplateData(template); // Düzenleme modunda gelen veriyi form alanlarına yükle
+      setTemplateData(template);
     } else {
       setTemplateData({ title: "", message: "", image: null });
     }
@@ -26,11 +26,7 @@ function CreateTemplateModal({
 
   useEffect(() => {
     if (!show) {
-      // Modal kapandığında tüm verileri sıfırla
       setTemplateData({ title: "", message: "", image: null });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""; // Dosya input'unu sıfırla
-      }
     }
   }, [show]);
 
@@ -48,9 +44,10 @@ function CreateTemplateModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    handleAddTemplate(templateData); // Yeni veya düzenlenen template verisini gönder
-    setTemplateData({ title: "", message: "", image: null }); // Formu temizle
-    handleClose(); // Modalı kapat
+    handleAddTemplate(templateData);
+    setTemplateData({ title: "", message: "", image: null });
+    fileInputRef.current.value = "";
+    handleClose();
   };
 
   const closeModal = () => {
@@ -72,7 +69,7 @@ function CreateTemplateModal({
       }}
       tabIndex="-1"
       role="dialog"
-      aria-labelledby="exampleModalLabel"
+      aria-labelledby="createTemplateModal"
       aria-hidden="true"
       onClick={handleOutsideClick}
     >
@@ -119,14 +116,56 @@ function CreateTemplateModal({
                 />
               </div>
               <div className="mb-3">
-                <label className="form-label fw-semibold">Resim Ekle</label>
-                <input
-                  type="file"
-                  className="form-control"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  ref={fileInputRef} // File input'a ref ekledik
-                />
+                {templateData.image ? (
+                  <div className="d-flex justify-content-center align-items-center">
+                    <div className="justify-content-center align-items-center position-relative d-inline-flex">
+                      <img
+                        src={URL.createObjectURL(templateData.image)}
+                        alt="template"
+                        className="rounded shadow"
+                        style={{
+                          width: "150px",
+                          height: "150px",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm rounded-circle position-absolute"
+                        style={{
+                          top: "0",
+                          right: "0",
+                          transform: "translate(40%, -40%)",
+                        }}
+                        onClick={() =>
+                          setTemplateData((prevTemplate) => ({
+                            ...prevTemplate,
+                            image: null,
+                          }))
+                        }
+                      >
+                        <i className="bi bi-x fs-6"></i>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label
+                      htmlFor="imageUpload"
+                      className="form-label fw-semibold"
+                    >
+                      Resim Ekle
+                    </label>
+                    <input
+                      type="file"
+                      id="imageUpload"
+                      className="form-control"
+                      accept="image/*"
+                      ref={fileInputRef}
+                      onChange={handleImageChange}
+                    />
+                  </div>
+                )}
               </div>
             </div>
             <div className="modal-footer">
