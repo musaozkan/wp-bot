@@ -69,6 +69,7 @@ node index.js
    - Scheduling options
    - Message status tracking
    - Import contacts from excel
+   - Multiple contact list for different campaigns
    - Manage contacts list
    - Multiple whatsapp session management
 
