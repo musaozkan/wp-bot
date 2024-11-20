@@ -1,14 +1,18 @@
 // src/pages/SignIn.jsx
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import FormTitle from "../components/FormTitle/FormTitle";
 import InputField from "../components/InputField/InputField";
+import { login } from "../services/UserService";
 
-export default function SignIn({ onLogin }) {
+export default function SignIn({ setLoggedIn }) {
   const [credentials, setCredentials] = useState({
-    username: "",
+    email: "",
     password: "",
   });
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -20,18 +24,36 @@ export default function SignIn({ onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin(credentials);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      login(credentials).then((response) => {
+        if (response.status === 200) {
+          console.log(response);
+          setSuccess(response.data.message);
+          setLoggedIn(true);
+          navigate("/");
+        } else {
+          setError(response.error.message);
+        }
+      });
+    } catch (error) {
+      setError("Bir hata oluştu. Lütfen tekrar deneyin.");
+    }
   };
 
   return (
     <>
       <FormTitle title="WhatsApp Bot Giriş" />
       <form onSubmit={handleSubmit}>
+        {error && <div className="alert alert-danger">{error}</div>}
+        {success && <div className="alert alert-success">{success}</div>}
         <InputField
-          type="text"
+          type="mail"
           placeholder="Kullanıcı adınızı girin"
-          id="username"
-          value={credentials.username}
+          id="email"
+          value={credentials.email}
           onChange={handleChange}
         />
         <InputField
@@ -45,9 +67,6 @@ export default function SignIn({ onLogin }) {
           Giriş Yap
         </button>
         <div className="d-flex justify-content-between align-items-center mt-3">
-          <Link to="/forgot-password" className="text-success">
-            Şifremi Unuttum?
-          </Link>
           <Link to="/sign-up" className="text-success">
             Yeni hesap oluştur
           </Link>
