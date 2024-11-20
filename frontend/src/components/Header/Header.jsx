@@ -1,9 +1,25 @@
 // src/components/Header.jsx
 import React from "react";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { logout } from "../../services/UserService";
 
-function Header({ title, onLogout, navLinks }) {
+function Header({ title, setLoggedIn, navLinks }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    try {
+      logout().then((response) => {
+        if (response.status === 200) {
+          setLoggedIn(false);
+          navigate("/sign-in");
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <header
       style={{
@@ -35,7 +51,7 @@ function Header({ title, onLogout, navLinks }) {
             ))}
           </ul>
         </nav>
-        <button className="btn btn-outline-success" onClick={onLogout}>
+        <button className="btn btn-outline-success" onClick={handleLogout}>
           Çıkış Yap
         </button>
       </div>
@@ -45,7 +61,7 @@ function Header({ title, onLogout, navLinks }) {
 
 Header.propTypes = {
   title: PropTypes.string.isRequired,
-  onLogout: PropTypes.func.isRequired,
+  setLoggedIn: PropTypes.func.isRequired,
   navLinks: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string.isRequired,
