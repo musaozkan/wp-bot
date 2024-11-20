@@ -2,6 +2,20 @@ import asyncHandler from "express-async-handler";
 import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 
+export const checkSession = asyncHandler(async (req, res) => {
+  if (req.session.user) {
+    res.status(200).json({
+      loggedIn: true,
+      user: req.session.user,
+    });
+  } else {
+    res.status(200).json({
+      loggedIn: false,
+      message: "Kullanıcı giriş yapmamış.",
+    });
+  }
+});
+
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
