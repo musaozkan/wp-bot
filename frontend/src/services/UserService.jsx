@@ -11,9 +11,9 @@ export const checkSession = async () => {
 };
 
 // Register
-export const register = async (userData) => {
+export const register = async (credentials) => {
   try {
-    const response = await api.post("/users/register", userData);
+    const response = await api.post("/users/register", credentials);
     return response;
   } catch (error) {
     return error.response.data;
