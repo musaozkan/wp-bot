@@ -1,18 +1,15 @@
 // src/components/Header.jsx
 import React from "react";
 import PropTypes from "prop-types";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { logout } from "../../services/UserService";
 
-function Header({ title, setLoggedIn, navLinks }) {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
+function Header({ title, handleLogout, navLinks }) {
+  const logoutUser = async () => {
     try {
       logout().then((response) => {
         if (response.status === 200) {
-          setLoggedIn(false);
-          navigate("/sign-in");
+          handleLogout();
         }
       });
     } catch (error) {
@@ -51,7 +48,7 @@ function Header({ title, setLoggedIn, navLinks }) {
             ))}
           </ul>
         </nav>
-        <button className="btn btn-outline-success" onClick={handleLogout}>
+        <button className="btn btn-outline-success" onClick={logoutUser}>
           Çıkış Yap
         </button>
       </div>
@@ -61,7 +58,7 @@ function Header({ title, setLoggedIn, navLinks }) {
 
 Header.propTypes = {
   title: PropTypes.string.isRequired,
-  setLoggedIn: PropTypes.func.isRequired,
+  handleLogout: PropTypes.func.isRequired,
   navLinks: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string.isRequired,
