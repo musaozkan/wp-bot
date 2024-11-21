@@ -1,18 +1,16 @@
-// src/pages/SignIn.jsx
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import FormTitle from "../components/FormTitle/FormTitle";
 import InputField from "../components/InputField/InputField";
 import { login } from "../services/UserService";
+import { useAlert } from "../context/AlertProvider";
 
-export default function SignIn({ setLoggedIn }) {
+export default function SignIn({ handleLogin }) {
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
   });
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  const navigate = useNavigate();
+  const { showAlert } = useAlert();
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -22,25 +20,19 @@ export default function SignIn({ setLoggedIn }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
 
     try {
-      login(credentials).then((response) => {
-        if (response.status === 200) {
-          setSuccess(response.data.message);
-          setLoggedIn(true);
-          setTimeout(() => {
-            navigate("/");
-          }, 1000);
-        } else {
-          setError(response.error.message);
-        }
-      });
+      const response = await login(credentials);
+      if (response.status === 200) {
+        showAlert(response.data.message, "success");
+        handleLogin();
+      } else {
+        showAlert(response.error.message, "danger");
+      }
     } catch (error) {
-      setError("Bir hata oluştu. Lütfen tekrar deneyin.");
+      showAlert("Bir hata oluştu. Lütfen tekrar deneyin.", "danger");
     }
   };
 
@@ -48,8 +40,6 @@ export default function SignIn({ setLoggedIn }) {
     <>
       <FormTitle title="WhatsApp Bot Giriş" />
       <form onSubmit={handleSubmit}>
-        {error && <div className="alert alert-danger">{error}</div>}
-        {success && <div className="alert alert-success">{success}</div>}
         <InputField
           type="email"
           placeholder="E-posta adresinizi girin"
