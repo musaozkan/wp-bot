@@ -1,7 +1,11 @@
 // src/components/SessionManager/SessionManager.jsx
-import React from "react";
+import React, { useState } from "react";
 
 function SessionManager() {
+  const [showModal, setShowModal] = useState(false);
+  const [sessions, setSessions] = useState([]);
+
+  const handleShowModal = () => setShowModal(true);
   return (
     <div className="p-4 bg-light rounded shadow-sm mb-4">
       <h2>Oturum Yöneticisi</h2>
