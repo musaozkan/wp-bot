@@ -30,10 +30,11 @@ export default function SignIn({ setLoggedIn }) {
     try {
       login(credentials).then((response) => {
         if (response.status === 200) {
-          console.log(response);
           setSuccess(response.data.message);
           setLoggedIn(true);
-          navigate("/");
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
         } else {
           setError(response.error.message);
         }
@@ -50,8 +51,8 @@ export default function SignIn({ setLoggedIn }) {
         {error && <div className="alert alert-danger">{error}</div>}
         {success && <div className="alert alert-success">{success}</div>}
         <InputField
-          type="mail"
-          placeholder="Kullanıcı adınızı girin"
+          type="email"
+          placeholder="E-posta adresinizi girin"
           id="email"
           value={credentials.email}
           onChange={handleChange}
