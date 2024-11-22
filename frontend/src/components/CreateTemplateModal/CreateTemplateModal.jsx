@@ -48,16 +48,28 @@ function CreateTemplateModal({
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const formData = new FormData();
+    formData.append("title", templateData.title);
+    formData.append("message", templateData.message);
+
+    if (templateData.image && typeof templateData.image === "object") {
+      formData.append("image", templateData.image);
+    }
+
+    if (!templateData.image && template?.image) {
+      formData.append("removeImage", true);
+    }
+
     try {
       if (template) {
-        editTemplate(template._id, templateData).then((response) => {
+        editTemplate(template._id, formData).then((response) => {
           if (response.status === 200) {
             refreshTemplates();
             handleClose();
           }
         });
       } else {
-        createTemplate(templateData).then((response) => {
+        createTemplate(formData).then((response) => {
           if (response.status === 201) {
             refreshTemplates();
             handleClose();
