@@ -6,6 +6,7 @@ import loggerMiddleware from "./middleware/loggerMiddleware.js";
 import corsMiddleware from "./middleware/corsMiddleware.js";
 import sessionMiddleware from "./middleware/sessionMiddleware.js";
 import userRoutes from "./routes/userRoutes.js";
+import templateRoutes from "./routes/templateRoutes.js";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use(sessionMiddleware);
 
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/templates", templateRoutes);
 
 // Error Middleware
 app.use(notFound);
