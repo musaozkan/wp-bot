@@ -68,7 +68,7 @@ export const getTemplateById = asyncHandler(async (req, res) => {
 
 // Edit template
 export const editTemplate = asyncHandler(async (req, res) => {
-  const { title, message } = req.body;
+  const { title, message, removeImage } = req.body;
   const templateId = req.params.id;
 
   const template = await Template.findById(templateId);
@@ -91,7 +91,9 @@ export const editTemplate = asyncHandler(async (req, res) => {
       }
     }
     template.image = req.file.filename;
-  } else {
+  }
+
+  if (removeImage === "true" || removeImage === true) {
     if (template.image) {
       const existingImagePath = path.join("templates", template.image);
       if (fs.existsSync(existingImagePath)) {
