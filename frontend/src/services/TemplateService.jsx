@@ -4,7 +4,6 @@ import api from "./BaseService";
 export const getTemplates = async () => {
   try {
     const response = await api.get("/templates");
-    console.log("TemplateService -> getTemplates -> response", response);
     return response;
   } catch (error) {
     return error.response.data;
@@ -15,7 +14,6 @@ export const getTemplates = async () => {
 export const getTemplateById = async (id) => {
   try {
     const response = await api.get(`/templates/${id}`);
-    console.log("TemplateService -> getTemplateById -> response", response);
     return response;
   } catch (error) {
     return error.response.data;
@@ -23,14 +21,7 @@ export const getTemplateById = async (id) => {
 };
 
 // Create Template
-export const createTemplate = async (template) => {
-  console.log("TemplateService -> createTemplate -> template", template);
-  const formData = new FormData();
-  formData.append("title", template.title);
-  formData.append("message", template.message);
-  if (template.image instanceof File) {
-    formData.append("image", template.image);
-  }
+export const createTemplate = async (formData) => {
   try {
     const response = await api.post("/templates", formData, {
       headers: {
@@ -44,13 +35,8 @@ export const createTemplate = async (template) => {
 };
 
 // Edit Template
-export const editTemplate = async (id, template) => {
-  const formData = new FormData();
-  formData.append("title", template.title);
-  formData.append("message", template.message);
-  formData.append("image", template.image);
+export const editTemplate = async (id, formData) => {
   try {
-    console.log("TemplateService -> editTemplate -> template", template);
     const response = await api.put(`/templates/${id}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
