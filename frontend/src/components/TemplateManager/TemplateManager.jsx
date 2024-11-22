@@ -1,11 +1,32 @@
 // src/components/TemplateManager/TemplateManager.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CreateTemplateModal from "../CreateTemplateModal/CreateTemplateModal";
+import {
+  getTemplates,
+  getTemplateById,
+  deleteTemplate,
+} from "../../services/TemplateService";
 
 function TemplateManager() {
   const [showModal, setShowModal] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+
+  useEffect(() => {
+    refreshTemplates();
+  }, []);
+
+  const refreshTemplates = () => {
+    try {
+      getTemplates().then((response) => {
+        if (response.status === 200) {
+          setTemplates(response.data);
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => {
@@ -13,27 +34,29 @@ function TemplateManager() {
     setSelectedTemplate(null);
   };
 
-  const handleAddTemplate = (newTemplate) => {
-    let updatedTemplates;
-    if (selectedTemplate) {
-      updatedTemplates = templates.map((template) =>
-        template === selectedTemplate ? newTemplate : template
-      );
-    } else {
-      updatedTemplates = [...templates, newTemplate];
-    }
-    setTemplates(updatedTemplates);
-    handleCloseModal();
-  };
-
   const handleEditTemplate = (index) => {
-    setSelectedTemplate(templates[index]);
-    handleShowModal();
+    try {
+      getTemplateById(index).then((response) => {
+        if (response.status === 200) {
+          setSelectedTemplate(response.data.template);
+          setShowModal(true);
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleDeleteTemplate = (index) => {
-    const updatedTemplates = templates.filter((_, i) => i !== index);
-    setTemplates(updatedTemplates);
+    try {
+      deleteTemplate(index).then((response) => {
+        if (response.status === 200) {
+          refreshTemplates();
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -53,20 +76,20 @@ function TemplateManager() {
         <ul className="list-group overflow-auto" style={{ maxHeight: "200px" }}>
           {templates.map((template, index) => (
             <li
-              key={index}
+              key={template._id}
               className="list-group-item d-flex justify-content-between align-items-center"
             >
               {template.title}
               <div>
                 <button
                   className="btn btn-sm btn-warning me-2"
-                  onClick={() => handleEditTemplate(index)}
+                  onClick={() => handleEditTemplate(template._id)}
                 >
                   Düzenle
                 </button>
                 <button
                   className="btn btn-sm btn-danger"
-                  onClick={() => handleDeleteTemplate(index)}
+                  onClick={() => handleDeleteTemplate(template._id)}
                 >
                   Sil
                 </button>
@@ -79,7 +102,7 @@ function TemplateManager() {
       <CreateTemplateModal
         show={showModal}
         handleClose={handleCloseModal}
-        handleAddTemplate={handleAddTemplate}
+        refreshTemplates={refreshTemplates}
         template={selectedTemplate}
       />
     </div>
