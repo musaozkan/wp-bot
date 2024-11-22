@@ -17,6 +17,9 @@ serviceAccountKey.json
 # Session files
 sessions/
 
+# Templates
+templates/
+
 # Build outputs
 dist/
 build/
