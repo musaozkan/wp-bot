@@ -1,11 +1,12 @@
 // src/components/CreateTemplateModal/CreateTemplateModal.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { createTemplate, editTemplate } from "../../services/TemplateService";
 
 function CreateTemplateModal({
   show,
   handleClose,
-  handleAddTemplate,
+  refreshTemplates,
   template,
 }) {
   const [templateData, setTemplateData] = useState({
@@ -14,11 +15,13 @@ function CreateTemplateModal({
     image: null,
   });
 
-  const fileInputRef = useRef(null);
-
   useEffect(() => {
     if (template) {
-      setTemplateData(template);
+      setTemplateData({
+        title: template.title || "",
+        message: template.message || "",
+        image: template.image || null,
+      });
     } else {
       setTemplateData({ title: "", message: "", image: null });
     }
@@ -44,10 +47,26 @@ function CreateTemplateModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    handleAddTemplate(templateData);
-    setTemplateData({ title: "", message: "", image: null });
-    fileInputRef.current.value = "";
-    handleClose();
+
+    try {
+      if (template) {
+        editTemplate(template._id, templateData).then((response) => {
+          if (response.status === 200) {
+            refreshTemplates();
+            handleClose();
+          }
+        });
+      } else {
+        createTemplate(templateData).then((response) => {
+          if (response.status === 201) {
+            refreshTemplates();
+            handleClose();
+          }
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const closeModal = () => {
@@ -55,8 +74,8 @@ function CreateTemplateModal({
   };
 
   const handleOutsideClick = (e) => {
-    if (e.target.classList.contains("modal-overlay")) {
-      closeModal();
+    if (e.target === e.currentTarget) {
+      handleClose();
     }
   };
 
@@ -120,7 +139,11 @@ function CreateTemplateModal({
                   <div className="d-flex justify-content-center align-items-center">
                     <div className="justify-content-center align-items-center position-relative d-inline-flex">
                       <img
-                        src={URL.createObjectURL(templateData.image)}
+                        src={
+                          templateData.image instanceof File
+                            ? URL.createObjectURL(templateData.image)
+                            : templateData.image
+                        }
                         alt="template"
                         className="rounded shadow"
                         style={{
@@ -161,7 +184,6 @@ function CreateTemplateModal({
                       id="imageUpload"
                       className="form-control"
                       accept="image/*"
-                      ref={fileInputRef}
                       onChange={handleImageChange}
                     />
                   </div>
@@ -190,7 +212,7 @@ function CreateTemplateModal({
 CreateTemplateModal.propTypes = {
   show: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
-  handleAddTemplate: PropTypes.func.isRequired,
+  refreshTemplates: PropTypes.func.isRequired,
   template: PropTypes.object,
 };
 
