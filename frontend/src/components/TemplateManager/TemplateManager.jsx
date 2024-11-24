@@ -62,7 +62,7 @@ function TemplateManager() {
   return (
     <div className="p-4 bg-light rounded shadow-sm mb-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Mesaj Taslağı Yöneticisi</h2>
+        <h2>Mesaj Şablonları Yönetimi</h2>
         <button className="btn btn-success" onClick={handleShowModal}>
           + Mesaj Taslağı Oluştur
         </button>
@@ -74,7 +74,7 @@ function TemplateManager() {
         </div>
       ) : (
         <ul className="list-group overflow-auto" style={{ maxHeight: "200px" }}>
-          {templates.map((template, index) => (
+          {templates.map((template) => (
             <li
               key={template._id}
               className="list-group-item d-flex justify-content-between align-items-center"
