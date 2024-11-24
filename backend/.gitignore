@@ -20,6 +20,9 @@ sessions/
 # Templates
 templates/
 
+# Numbers
+numbers/
+
 # Build outputs
 dist/
 build/
