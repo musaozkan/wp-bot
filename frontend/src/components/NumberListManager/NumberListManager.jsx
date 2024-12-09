@@ -12,14 +12,12 @@ import {
 // Modal for Creating New Lists with CSV Import
 function CreateListModal({ onClose, onCreate }) {
   const [listName, setListName] = useState("");
-  const [csvFile, setCsvFile] = useState(null);
   const [error, setError] = useState("");
   const [previewNumbers, setPreviewNumbers] = useState([]);
 
   const handleFileUpload = (e) => {
     setError("");
     const file = e.target.files[0];
-    setCsvFile(file);
 
     if (file) {
       Papa.parse(file, {
@@ -61,6 +59,19 @@ function CreateListModal({ onClose, onCreate }) {
     if (e.target.classList.contains("modal")) {
       onClose();
     }
+  };
+
+  const formatPhoneNumber = (value) => {
+    const cleaned = value.replace(/\D/g, "");
+    if (!cleaned.startsWith("90")) {
+      return "+90 ";
+    }
+    const formatted = cleaned
+      .substring(2)
+      .match(/(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
+    return `+90 ${formatted[1] || ""}${formatted[2] ? ` ${formatted[2]}` : ""}${
+      formatted[3] ? ` ${formatted[3]}` : ""
+    }${formatted[4] ? ` ${formatted[4]}` : ""}`;
   };
 
   return (
@@ -124,7 +135,7 @@ function CreateListModal({ onClose, onCreate }) {
                 >
                   {previewNumbers.map((num, index) => (
                     <li key={index} className="list-group-item">
-                      {num}
+                      {formatPhoneNumber(num)}
                     </li>
                   ))}
                 </ul>
@@ -223,7 +234,7 @@ function NumberListManagerModal({
                     key={index}
                     className="list-group-item d-flex justify-content-between align-items-center"
                   >
-                    {number}
+                    {formatPhoneNumber(number)}
                     <button
                       className="btn btn-sm btn-danger"
                       onClick={() => onRemove(number)}
@@ -334,7 +345,7 @@ function NumberListManager() {
           <i className="bi bi-emoji-frown me-2"></i>Henüz liste bulunmamaktadır!
         </div>
       ) : (
-        <ul className="list-group overflow-auto" style={{ maxHeight: "300px" }}>
+        <ul className="list-group overflow-auto" style={{ maxHeight: "150px" }}>
           {lists.map((list) => (
             <li
               key={list}
