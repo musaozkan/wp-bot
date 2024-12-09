@@ -73,7 +73,7 @@ function TemplateManager() {
           Bulunmamaktadır!
         </div>
       ) : (
-        <ul className="list-group overflow-auto" style={{ maxHeight: "200px" }}>
+        <ul className="list-group overflow-auto" style={{ maxHeight: "150px" }}>
           {templates.map((template) => (
             <li
               key={template._id}
