@@ -8,7 +8,7 @@ function SessionManager() {
   const handleShowModal = () => setShowModal(true);
   return (
     <div className="p-4 bg-light rounded shadow-sm mb-4">
-      <h2>Oturum Yöneticisi</h2>
+      <h2>Hesap ve Oturum Yönetimi</h2>
       <p className="text-muted">
         Burada oturum yönetimi işlemlerini yapabilirsiniz.
       </p>
