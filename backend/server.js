@@ -8,6 +8,8 @@ import sessionMiddleware from "./middleware/sessionMiddleware.js";
 import userRoutes from "./routes/userRoutes.js";
 import templateRoutes from "./routes/templateRoutes.js";
 import numberListRoutes from "./routes/numberListRoutes.js";
+import sessionRoutes from "./routes/sessionRoutes.js";
+import { connectWebSocket } from "./services/webSocketClient.js";
 
 dotenv.config();
 
@@ -26,6 +28,7 @@ app.use(sessionMiddleware);
 app.use("/api/users", userRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/numbers", numberListRoutes);
+app.use("/api/sessions", sessionRoutes);
 
 // Error Middleware
 app.use(notFound);
@@ -33,6 +36,9 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || "development";
+
+// Create WebSocket Connection
+connectWebSocket("ws://localhost:8080");
 
 app.listen(PORT, () => {
   console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`);
