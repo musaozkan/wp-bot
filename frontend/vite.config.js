@@ -5,8 +5,12 @@ export default defineConfig(() => {
   return {
     plugins: [react()],
     server: {
-      port: 3000,
+      port: 3001,
       host: "0.0.0.0",
+      open: "true",
+    },
+    define: {
+      serverUrl: JSON.stringify("http://localhost:3000/api"),
     },
   };
 });
