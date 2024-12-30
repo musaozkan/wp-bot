@@ -1,9 +1,9 @@
 import api from "./BaseService";
 
 // Create a new WhatsApp session
-export const createSession = async (phoneNumber) => {
+export const createSession = async (sessionName, phoneNumber) => {
   try {
-    const response = await api.post("/sessions", { phoneNumber });
+    const response = await api.post("/sessions", { sessionName, phoneNumber });
     console.log(response);
     return response;
   } catch (error) {
