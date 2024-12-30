@@ -52,7 +52,6 @@ const handleMessage = (message) => {
 // Handle QR code messages
 const handleQrMessage = (payload) => {
   const { qr, taskId } = payload;
-  console.log("QR Code received:", taskId);
 
   // Update QR code status
   const qrStatus = qrStatusStore.get(taskId);
@@ -98,17 +97,13 @@ const sendMessage = (type, payload) => {
 };
 
 // Create a new WhatsApp session
-export const createSession = (clientId) => {
-  if (!clientId) {
-    console.error("Client ID is required to create a session.");
-    return null;
-  }
+export const createSession = () => {
   const taskId = uuidv4();
 
   // Initialize session status
-  qrStatusStore.set(taskId, { clientId, qr: null, status: "pending" });
+  qrStatusStore.set(taskId, { qr: null, status: "pending" });
 
-  sendMessage("createSession", { clientId, taskId });
+  sendMessage("createSession", { taskId });
 
   return taskId;
 };
