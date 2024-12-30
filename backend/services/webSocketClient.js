@@ -118,6 +118,15 @@ export const cancelSession = (taskId) => {
   sendMessage("cancelSession", { taskId });
 };
 
+export const deleteSession = (taskId) => {
+  if (!taskId) {
+    console.error("Task ID is required to delete a session.");
+    return;
+  }
+
+  sendMessage("deleteSession", { taskId });
+};
+
 // Get QR code for a given task ID and
 export const getQrCodeStatus = (taskId) => {
   const qrStatus = qrStatusStore.get(taskId);
