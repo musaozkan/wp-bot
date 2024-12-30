@@ -15,7 +15,7 @@ router.post("/", protect, createSession);
 // Route to get all sessions
 router.get("/", protect, getSessions);
 
-// Route to cancel a session creation
+// Route to cancel a session creation or delete a session
 router.delete("/:taskId", protect, cancelSession);
 
 // Route to serve QR code status via SSE
