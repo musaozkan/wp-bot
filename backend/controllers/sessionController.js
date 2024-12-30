@@ -3,6 +3,7 @@ import {
   createSession as wsCreateSession,
   getQrCodeStatus,
   cancelSession as wsCancelSession,
+  deleteSession as wsDeleteSession,
 } from "../services/webSocketClient.js";
 import Session from "../models/sessionModel.js";
 
@@ -50,16 +51,50 @@ export const createSession = asyncHandler(async (req, res) => {
   }
 });
 
-// Cancel WhatsApp session creation
+// Cancel WhatsApp session creation or delete a session
 export const cancelSession = asyncHandler(async (req, res) => {
   const { taskId } = req.params;
+  const { type } = req.query;
 
   if (!taskId) {
     res.status(400);
-    throw new Error("İptal etmek için görev kimliği gereklidir.");
+    if (type === "delete") {
+      res.status(400);
+      throw new Error("Silmek için görev kimliği gereklidir.");
+    } else {
+      res.status(400);
+      throw new Error("İptal etmek için görev kimliği gereklidir.");
+    }
   }
 
-  // Check if session exists
+  /*
+  const sessionSchema = mongoose.Schema(
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: "User",
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      taskId: {
+        type: String,
+        required: true,
+      },
+      phoneNumber: {
+        type: String,
+        required: true,
+      },
+    },
+    {
+      timestamps: true,
+    }
+  );
+  */
+
+  // Find and delete session by task ID
   const session = await Session.findOne({ taskId });
 
   if (!session) {
@@ -67,20 +102,28 @@ export const cancelSession = asyncHandler(async (req, res) => {
     throw new Error("Oturum bulunamadı.");
   }
 
-  // Delete session from database
-  await session.remove();
+  await Session.deleteOne({ taskId });
 
   try {
-    // Cancel WhatsApp session creation
-    wsCancelSession(taskId);
+    if (type === "delete") {
+      // Delete WhatsApp session
+      wsDeleteSession(taskId);
 
-    res.status(200).json({
-      message: "Oturum oluşturma iptal edildi.",
-    });
+      res.status(200).json({
+        message: "Oturum silindi.",
+      });
+    } else {
+      // Cancel WhatsApp session creation
+      wsCancelSession(taskId);
+
+      res.status(200).json({
+        message: "Oturum oluşturma iptal edildi.",
+      });
+    }
   } catch (error) {
     console.error("Oturum iptali sırasında hata:", error.message);
     res.status(500);
-    throw new Error("Oturum iptal edilemedi.");
+    throw new Error("Oturum iptal edilemedi veya silinemedi.");
   }
 });
 
