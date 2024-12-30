@@ -4,9 +4,10 @@ import {
   getQrCodeStatus,
   cancelSession as wsCancelSession,
 } from "../services/webSocketClient.js";
+import Session from "../models/sessionModel.js";
 
 export const createSession = asyncHandler(async (req, res) => {
-  const { phoneNumber } = req.body;
+  const { phoneNumber, sessionName } = req.body;
   const userId = req.session.user._id;
 
   if (!phoneNumber) {
@@ -14,17 +15,30 @@ export const createSession = asyncHandler(async (req, res) => {
     throw new Error("Oturum oluşturmak için telefon numarası gereklidir.");
   }
 
-  try {
-    const clientId = `${userId}-${phoneNumber}`;
+  if (!sessionName) {
+    res.status(400);
+    throw new Error("Oturum oluşturmak için oturum adı gereklidir.");
+  }
 
+  try {
     // Create a WhatsApp session
-    const taskId = wsCreateSession(clientId);
+    const taskId = wsCreateSession();
 
     // Check if task ID exists
     if (!taskId) {
       res.status(500);
       throw new Error("Oturum oluşturulamadı.");
     }
+
+    // Save session details to database
+    const session = new Session({
+      user: userId,
+      name: sessionName,
+      taskId,
+      phoneNumber,
+    });
+
+    await session.save();
 
     res.status(200).json({
       taskId,
@@ -36,6 +50,7 @@ export const createSession = asyncHandler(async (req, res) => {
   }
 });
 
+// Cancel WhatsApp session creation
 export const cancelSession = asyncHandler(async (req, res) => {
   const { taskId } = req.params;
 
@@ -43,6 +58,17 @@ export const cancelSession = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("İptal etmek için görev kimliği gereklidir.");
   }
+
+  // Check if session exists
+  const session = await Session.findOne({ taskId });
+
+  if (!session) {
+    res.status(404);
+    throw new Error("Oturum bulunamadı.");
+  }
+
+  // Delete session from database
+  await session.remove();
 
   try {
     // Cancel WhatsApp session creation
@@ -56,6 +82,15 @@ export const cancelSession = asyncHandler(async (req, res) => {
     res.status(500);
     throw new Error("Oturum iptal edilemedi.");
   }
+});
+
+// Get all sessions
+export const getSessions = asyncHandler(async (req, res) => {
+  const userId = req.session.user._id;
+
+  const sessions = await Session.find({ user: userId });
+
+  res.status(200).json(sessions);
 });
 
 // Serve QR code status via SSE
