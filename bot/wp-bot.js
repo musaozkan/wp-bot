@@ -29,6 +29,9 @@ const handleClientMessage = async (ws, message) => {
       case "cancelSession":
         await handleCancelSession(ws, payload.taskId);
         break;
+      case "deleteSession":
+        await handleDeleteSession(ws, payload.taskId);
+        break;
       default:
         sendError(ws, "Unknown message type");
         break;
@@ -50,6 +53,17 @@ const handleCancelSession = async (ws, taskId) => {
     clients.delete(taskId);
     sendStatus(ws, "Session creation cancelled", taskId);
   }
+};
+
+// Delete a session
+const handleDeleteSession = async (ws, taskId) => {
+  const client = clients.get(taskId);
+  if (client) {
+    client.destroy();
+    clients.delete(taskId);
+  }
+
+  sendStatus(ws, "Session deleted", taskId);
 };
 
 // Create a new WhatsApp session
