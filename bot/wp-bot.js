@@ -53,14 +53,14 @@ const handleCancelSession = async (ws, taskId) => {
 };
 
 // Create a new WhatsApp session
-const handleClientCreate = (ws, clientId, taskId) => {
+const handleClientCreate = (ws, taskId) => {
   try {
     const client = new Client({
-      authStrategy: new LocalAuth({ clientId }),
+      authStrategy: new LocalAuth({ taskId }),
     });
 
     client.on("qr", (qr) => sendQrCode(ws, qr, taskId));
-    client.on("ready", () => sendStatus(ws, "Client is ready"));
+    client.on("ready", () => sendStatus(ws, "Client is ready", taskId));
     client.initialize();
     clients.set(taskId, client);
   } catch (err) {
@@ -72,7 +72,7 @@ const handleClientCreate = (ws, clientId, taskId) => {
 // Handle session creation
 const handleCreateSession = async (ws, payload) => {
   try {
-    handleClientCreate(ws, payload.clientId, payload.taskId);
+    handleClientCreate(ws, payload.taskId);
   } catch (err) {
     console.error("Error creating session:", err);
     sendError(ws, "Failed to create session");
