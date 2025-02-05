@@ -2,35 +2,37 @@ import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
 
 let wsClient = null;
-
-// Store for QR code and session statuses
 const qrStatusStore = new Map();
 
-// Connect to WebSocket Server
+// WebSocket bağlantısını oluştur ve yönet
 export const connectWebSocket = (url) => {
   if (wsClient) return wsClient;
 
   wsClient = new WebSocket(url);
 
-  wsClient.on("open", handleOpen);
+  wsClient.on("open", () => {
+    console.log("✅ WebSocket Client Connected");
+  });
+
   wsClient.on("message", handleMessage);
-  wsClient.on("close", handleClose);
-  wsClient.on("error", handleError);
+
+  wsClient.on("close", () => {
+    console.warn("⚠️ WebSocket Disconnected. Reconnecting...");
+    wsClient = null;
+    setTimeout(() => connectWebSocket(url), 3000); // Otomatik tekrar bağlan
+  });
+
+  wsClient.on("error", (err) => {
+    console.error("❌ WebSocket Error:", err.message);
+  });
 
   return wsClient;
 };
 
-// Handle WebSocket open event
-const handleOpen = () => {
-  console.log("WebSocket Client Connected");
-};
-
-// Handle WebSocket message event
+// Gelen mesajları işle
 const handleMessage = (message) => {
   try {
     const parsedMessage = JSON.parse(message);
-    console.log("Message from WebSocket Server:", parsedMessage);
-
     switch (parsedMessage.type) {
       case "qr":
         handleQrMessage(parsedMessage.payload);
@@ -39,96 +41,57 @@ const handleMessage = (message) => {
         handleStatusMessage(parsedMessage.payload);
         break;
       case "error":
-        handleErrorMessage(parsedMessage.payload.message);
+        console.error("❌ WebSocket Error:", parsedMessage.payload.message);
         break;
       default:
-        console.warn("Unknown message type:", parsedMessage.type);
+        console.warn("⚠️ Unknown WebSocket message type:", parsedMessage.type);
     }
   } catch (err) {
-    console.error("Failed to process WebSocket message:", err.message);
+    console.error("❌ WebSocket Message Parsing Error:", err.message);
   }
 };
 
-// Handle QR code messages
+// QR kod mesajlarını işle
 const handleQrMessage = (payload) => {
   const { qr, taskId } = payload;
-
-  // Update QR code status
-  const qrStatus = qrStatusStore.get(taskId);
-  qrStatusStore.set(taskId, { ...qrStatus, qr, status: "qr-received" });
+  qrStatusStore.set(taskId, { qr, status: "qr-received" });
 };
 
-// Handle status messages
+// Session durumlarını yönet
 const handleStatusMessage = (payload) => {
   const { message, taskId } = payload;
   if (message === "Session creation cancelled") {
     qrStatusStore.delete(taskId);
   } else if (message === "Client is ready") {
-    const qrStatus = qrStatusStore.get(taskId);
-    qrStatusStore.set(taskId, { ...qrStatus, status: "client-ready" });
+    qrStatusStore.set(taskId, { status: "client-ready" });
   }
 };
 
-// Handle error messages
-const handleErrorMessage = (message) => {
-  console.error("Error received:", message);
-};
-
-// Handle WebSocket close event
-const handleClose = () => {
-  console.log("WebSocket Client Disconnected");
-  wsClient = null;
-};
-
-// Handle WebSocket error event
-const handleError = (error) => {
-  console.error("WebSocket Client Error:", error.message);
-};
-
-// Send a message to the WebSocket server
+// WebSocket üzerinden mesaj gönder
 const sendMessage = (type, payload) => {
   if (wsClient && wsClient.readyState === WebSocket.OPEN) {
-    const message = { type, payload };
-    wsClient.send(JSON.stringify(message));
-    console.log("Message sent to WebSocket Server:", message);
+    wsClient.send(JSON.stringify({ type, payload }));
   } else {
-    console.error("WebSocket Client is not connected.");
+    console.error("❌ WebSocket Client is not connected.");
   }
 };
 
-// Create a new WhatsApp session
+// WhatsApp session yönetimi
 export const createSession = () => {
   const taskId = uuidv4();
-
-  // Initialize session status
-  qrStatusStore.set(taskId, { qr: null, status: "pending" });
-
+  qrStatusStore.set(taskId, { status: "pending" });
   sendMessage("createSession", { taskId });
-
   return taskId;
 };
 
-// Cancel a WhatsApp session creation
 export const cancelSession = (taskId) => {
-  if (!taskId) {
-    console.error("Task ID is required to cancel a session.");
-    return;
-  }
-
   sendMessage("cancelSession", { taskId });
+  qrStatusStore.delete(taskId);
 };
 
 export const deleteSession = (taskId) => {
-  if (!taskId) {
-    console.error("Task ID is required to delete a session.");
-    return;
-  }
-
   sendMessage("deleteSession", { taskId });
+  qrStatusStore.delete(taskId);
 };
 
-// Get QR code for a given task ID and
-export const getQrCodeStatus = (taskId) => {
-  const qrStatus = qrStatusStore.get(taskId);
-  return qrStatus ? qrStatus : null;
-};
+export const getQrCodeStatus = (taskId) => qrStatusStore.get(taskId) || null;
