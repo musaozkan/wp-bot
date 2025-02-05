@@ -27,7 +27,6 @@ export default function SignUp() {
 
     try {
       register(credentials).then((response) => {
-        console.log(response);
         if (response.status === 201) {
           showAlert("Kayıt başarılı. Giriş yapabilirsiniz.", "success");
           setTimeout(() => {
