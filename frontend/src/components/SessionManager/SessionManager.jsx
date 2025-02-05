@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import QRCode from "react-qr-code";
 import {
   createSession,
-  cancelSession,
+  cancelOrDeleteSession,
   getSessions,
 } from "../../services/SessionService";
 
 function CreateSessionModal({ onClose, onCreate }) {
   const [sessionName, setSessionName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState("");
 
   const handleCreate = () => {
@@ -17,19 +16,7 @@ function CreateSessionModal({ onClose, onCreate }) {
       return;
     }
 
-    if (!phoneNumber.trim()) {
-      setError("Telefon numarası boş bırakılamaz.");
-      return;
-    }
-
-    if (
-      !/^\+[0-9]{1,3} [0-9]{3} [0-9]{3} [0-9]{2} [0-9]{2}$/.test(phoneNumber)
-    ) {
-      setError("Telefon numarası geçersiz.");
-      return;
-    }
-
-    onCreate(sessionName.trim(), phoneNumber.trim());
+    onCreate(sessionName.trim());
     setSessionName("");
     setError("");
     onClose();
@@ -78,26 +65,6 @@ function CreateSessionModal({ onClose, onCreate }) {
                 <div className="invalid-feedback">Oturum adı zorunludur.</div>
               )}
             </div>
-            <div className="mb-3">
-              <label htmlFor="phoneNumber" className="form-label">
-                Telefon Numarası
-              </label>
-              <input
-                type="text"
-                id="phoneNumber"
-                className={`form-control ${
-                  error.includes("Telefon numarası") ? "is-invalid" : ""
-                }`}
-                placeholder="Lütfen telefon numarasını giriniz"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-              />
-              {error.includes("Telefon numarası") && (
-                <div className="invalid-feedback">
-                  Telefon numarası zorunludur.
-                </div>
-              )}
-            </div>
           </div>
           <div className="modal-footer">
             <button className="btn btn-secondary" onClick={onClose}>
@@ -106,7 +73,7 @@ function CreateSessionModal({ onClose, onCreate }) {
             <button
               className="btn btn-success"
               onClick={handleCreate}
-              disabled={!sessionName || !phoneNumber}
+              disabled={!sessionName}
             >
               Oluştur
             </button>
@@ -146,16 +113,10 @@ function AuthenticationModal({ onClose, taskId }) {
     handleSseQrStatus();
   }, [taskId]);
 
-  const handleClickOutside = (e) => {
-    if (e.target.classList.contains("modal")) {
-      onClose();
-    }
-  };
-
   const handleCancel = async () => {
     try {
       if (qrStatus === "qr-received") {
-        const response = await cancelSession(taskId, "cancel");
+        const response = await cancelOrDeleteSession(taskId, "cancel");
         if (response.status === 200) {
           onClose();
           return;
@@ -173,7 +134,6 @@ function AuthenticationModal({ onClose, taskId }) {
     <div
       className="modal fade show d-block"
       style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-      onClick={handleClickOutside}
     >
       <div className="modal-dialog modal-lg modal-dialog-centered">
         <div className="modal-content">
@@ -235,9 +195,9 @@ function SessionManager() {
     }
   };
 
-  const handleCreateSession = async (sessionName, phoneNumber) => {
+  const handleCreateSession = async (sessionName) => {
     try {
-      const response = await createSession(sessionName, phoneNumber);
+      const response = await createSession(sessionName);
       if (response.status === 200) {
         setTaskId(response.data.taskId);
         setShowAuthModal(true);
@@ -260,27 +220,37 @@ function SessionManager() {
           + Yeni Oturum
         </button>
       </div>
-      <ul className="list-group">
-        {sessions.map((session) => (
-          <li
-            key={session._id}
-            className="list-group-item d-flex justify-content-between align-items-center"
-          >
-            <div>
-              <div className="fw-bold">{session.name}</div>
-              <div className="text-muted">{session.phoneNumber}</div>
-            </div>
-            <div>
-              <button
-                className="btn btn-sm btn-danger"
-                onClick={() => cancelSession(session.taskId, "delete")}
-              >
-                Sil
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {sessions.length === 0 ? (
+        <div className="alert alert-info text-center" role="alert">
+          <i className="bi bi-emoji-frown me-2"></i>Oluşturulan oturum
+          bulunmamaktadır!
+        </div>
+      ) : (
+        <ul className="list-group overflow-auto" style={{ maxHeight: "150px" }}>
+          {sessions.map((session) => (
+            <li
+              key={session._id}
+              className="list-group-item d-flex justify-content-between align-items-center"
+            >
+              {session.name}
+              <div>
+                <button
+                  className="btn btn-sm btn-danger"
+                  onClick={() => {
+                    cancelOrDeleteSession(session.taskId, "delete")
+                      .then(() => fetchSessions())
+                      .catch((err) =>
+                        console.error("Failed to delete session:", err)
+                      );
+                  }}
+                >
+                  Sil
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
       {showCreateModal && (
         <CreateSessionModal
           onClose={() => setShowCreateModal(false)}
@@ -289,7 +259,10 @@ function SessionManager() {
       )}
       {showAuthModal && (
         <AuthenticationModal
-          onClose={() => setShowAuthModal(false)}
+          onClose={() => {
+            setShowAuthModal(false);
+            fetchSessions();
+          }}
           taskId={taskId}
         />
       )}

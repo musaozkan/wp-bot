@@ -1,13 +1,11 @@
 import api from "./BaseService";
 
 // Create a new WhatsApp session
-export const createSession = async (sessionName, phoneNumber) => {
+export const createSession = async (sessionName) => {
   try {
-    const response = await api.post("/sessions", { sessionName, phoneNumber });
-    console.log(response);
+    const response = await api.post("/sessions", { sessionName });
     return response;
   } catch (error) {
-    console.log(error);
     return error.response.data;
   }
 };
@@ -22,8 +20,8 @@ export const getSessions = async () => {
   }
 };
 
-// Cancel & Delete a WhatsApp session creation
-export const cancelSession = async (taskId, type) => {
+// Cancel or Delete a WhatsApp session creation
+export const cancelOrDeleteSession = async (taskId, type) => {
   try {
     const response = await api.delete(`/sessions/${taskId}?type=${type}`);
     return response;
