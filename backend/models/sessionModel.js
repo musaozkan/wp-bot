@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const sessionSchema = mongoose.Schema(
+const sessionSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -14,10 +14,12 @@ const sessionSchema = mongoose.Schema(
     taskId: {
       type: String,
       required: true,
+      unique: true,
     },
-    phoneNumber: {
+    status: {
       type: String,
-      required: true,
+      enum: ["pending", "qr-received", "client-ready"],
+      default: "pending",
     },
   },
   {
@@ -26,5 +28,4 @@ const sessionSchema = mongoose.Schema(
 );
 
 const Session = mongoose.model("Session", sessionSchema);
-
 export default Session;
