@@ -3,128 +3,106 @@ import { WebSocketServer } from "ws";
 
 const { Client, LocalAuth } = pkg;
 
-// Create WebSocket server
+// WebSocket server başlat
 const wss = new WebSocketServer({ port: 8080 }, () => {
-  console.log("WebSocket server running on port 8080");
+  console.log("✅ WebSocket server running on port 8080");
 });
 
-// Handle WebSocket connection
+// Aktif WhatsApp istemcilerini tutan Map nesnesi
+const clients = new Map();
+
+// WebSocket bağlantılarını yönet
 wss.on("connection", (ws) => {
-  console.log("New client connected");
+  console.log("🔗 New client connected");
 
   ws.on("message", (message) => handleClientMessage(ws, message));
-  ws.on("close", handleClientDisconnection);
+  ws.on("close", () => {
+    console.log("❌ Client disconnected");
+  });
 });
 
-// Handle incoming client message
+// **İstemciden gelen mesajları işle**
 const handleClientMessage = async (ws, message) => {
   try {
-    const parsedMessage = JSON.parse(message);
-    const { type, payload } = parsedMessage;
+    const { type, payload } = JSON.parse(message);
+
+    if (!payload || !payload.taskId) {
+      return sendMessage(ws, "error", "Invalid payload structure");
+    }
 
     switch (type) {
       case "createSession":
-        await handleCreateSession(ws, payload);
+        handleCreateSession(ws, payload.taskId);
         break;
       case "cancelSession":
-        await handleCancelSession(ws, payload.taskId);
+        handleCancelSession(ws, payload.taskId);
         break;
       case "deleteSession":
-        await handleDeleteSession(ws, payload.taskId);
+        handleDeleteSession(ws, payload.taskId);
         break;
       default:
-        sendError(ws, "Unknown message type");
+        sendMessage(ws, "error", "Unknown message type");
         break;
     }
   } catch (err) {
-    console.error("Error processing message:", err);
-    sendError(ws, "Invalid message format");
+    console.error("❌ Error processing message:", err);
+    sendMessage(ws, "error", "Invalid JSON format");
   }
 };
 
-// Store active clients
-const clients = new Map();
-
-// Cancel session creation
-const handleCancelSession = async (ws, taskId) => {
-  const client = clients.get(taskId);
-  if (client) {
-    client.destroy();
-    clients.delete(taskId);
-    sendStatus(ws, "Session creation cancelled", taskId);
-  }
-};
-
-// Delete a session
-const handleDeleteSession = async (ws, taskId) => {
-  const client = clients.get(taskId);
-  if (client) {
-    client.destroy();
-    clients.delete(taskId);
+// **Yeni bir WhatsApp istemcisi oluştur**
+const handleCreateSession = (ws, taskId) => {
+  if (clients.has(taskId)) {
+    return sendMessage(ws, "error", "Session already exists");
   }
 
-  sendStatus(ws, "Session deleted", taskId);
-};
-
-// Create a new WhatsApp session
-const handleClientCreate = (ws, taskId) => {
   try {
     const client = new Client({
-      authStrategy: new LocalAuth({ taskId }),
+      authStrategy: new LocalAuth({ clientId: taskId }),
     });
 
-    client.on("qr", (qr) => sendQrCode(ws, qr, taskId));
-    client.on("ready", () => sendStatus(ws, "Client is ready", taskId));
+    client.on("qr", (qr) => sendMessage(ws, "qr", { qr, taskId }));
+    client.on("ready", () =>
+      sendMessage(ws, "status", { message: "Client is ready", taskId })
+    );
+
     client.initialize();
     clients.set(taskId, client);
+
+    sendMessage(ws, "status", { message: "Session created", taskId });
   } catch (err) {
-    console.error("Error creating session:", err);
-    sendError(ws, "Failed to create session");
+    console.error("❌ Error creating session:", err);
+    sendMessage(ws, "error", "Failed to create session");
   }
 };
 
-// Handle session creation
-const handleCreateSession = async (ws, payload) => {
-  try {
-    handleClientCreate(ws, payload.taskId);
-  } catch (err) {
-    console.error("Error creating session:", err);
-    sendError(ws, "Failed to create session");
+// **Session iptal et**
+const handleCancelSession = (ws, taskId) => {
+  if (!clients.has(taskId)) {
+    return sendMessage(ws, "error", "Session not found");
   }
+
+  clients.get(taskId).destroy();
+  clients.delete(taskId);
+
+  sendMessage(ws, "status", { message: "Session creation cancelled", taskId });
 };
 
-// Send QR code to client
-const sendQrCode = (ws, qr, taskId) => {
-  console.log("Sending QR code to client:", taskId);
-  ws.send(
-    JSON.stringify({
-      type: "qr",
-      payload: { qr, taskId },
-    })
-  );
+// **Session sil**
+const handleDeleteSession = (ws, taskId) => {
+  if (!clients.has(taskId)) {
+    return sendMessage(ws, "error", "Session not found");
+  }
+
+  clients.get(taskId).destroy();
+  clients.delete(taskId);
+
+  sendMessage(ws, "status", { message: "Session deleted", taskId });
 };
 
-// Send status message to client
-const sendStatus = (ws, message, taskId) => {
-  ws.send(
-    JSON.stringify({
-      type: "status",
-      payload: { message, taskId },
-    })
-  );
-};
-
-// Send error message to client
-const sendError = (ws, errorMessage) => {
-  ws.send(
-    JSON.stringify({
-      type: "error",
-      payload: { message: errorMessage },
-    })
-  );
-};
-
-// Handle WebSocket disconnection
-const handleClientDisconnection = () => {
-  console.log("Client disconnected");
+// **WebSocket istemcisine mesaj gönderme fonksiyonu**
+const sendMessage = (ws, type, payload) => {
+  if (ws.readyState === ws.OPEN) {
+    ws.send(JSON.stringify({ type, payload }));
+  }
 };
