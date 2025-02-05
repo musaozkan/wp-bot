@@ -1,5 +1,6 @@
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
+import Session from "../models/sessionModel.js";
 
 let wsClient = null;
 const qrStatusStore = new Map();
@@ -30,15 +31,15 @@ export const connectWebSocket = (url) => {
 };
 
 // Gelen mesajları işle
-const handleMessage = (message) => {
+const handleMessage = async (message) => {
   try {
     const parsedMessage = JSON.parse(message);
     switch (parsedMessage.type) {
       case "qr":
-        handleQrMessage(parsedMessage.payload);
+        await handleQrMessage(parsedMessage.payload);
         break;
       case "status":
-        handleStatusMessage(parsedMessage.payload);
+        await handleStatusMessage(parsedMessage.payload);
         break;
       case "error":
         console.error("❌ WebSocket Error:", parsedMessage.payload.message);
@@ -51,19 +52,25 @@ const handleMessage = (message) => {
   }
 };
 
-// QR kod mesajlarını işle
-const handleQrMessage = (payload) => {
+// QR kod mesajlarını işle ve MongoDB'ye kaydet
+const handleQrMessage = async (payload) => {
   const { qr, taskId } = payload;
   qrStatusStore.set(taskId, { qr, status: "qr-received" });
 };
 
-// Session durumlarını yönet
-const handleStatusMessage = (payload) => {
+// Session durumlarını yönet ve MongoDB'yi güncelle
+const handleStatusMessage = async (payload) => {
   const { message, taskId } = payload;
+
   if (message === "Session creation cancelled") {
     qrStatusStore.delete(taskId);
+    await Session.findOneAndDelete({ taskId });
+  } else if (message === "Session deleted") {
+    qrStatusStore.delete(taskId);
+    await Session.findOneAndDelete({ taskId });
   } else if (message === "Client is ready") {
     qrStatusStore.set(taskId, { status: "client-ready" });
+    await Session.findOneAndUpdate({ taskId }, { status: "client-ready" });
   }
 };
 
@@ -84,14 +91,12 @@ export const createSession = () => {
   return taskId;
 };
 
-export const cancelSession = (taskId) => {
+export const cancelSession = async (taskId) => {
   sendMessage("cancelSession", { taskId });
-  qrStatusStore.delete(taskId);
 };
 
-export const deleteSession = (taskId) => {
+export const deleteSession = async (taskId) => {
   sendMessage("deleteSession", { taskId });
-  qrStatusStore.delete(taskId);
 };
 
 export const getQrCodeStatus = (taskId) => qrStatusStore.get(taskId) || null;
