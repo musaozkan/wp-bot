@@ -1,5 +1,15 @@
 import pkg from "whatsapp-web.js";
 import { WebSocketServer } from "ws";
+import fs from "fs";
+import path from "path";
+
+// ES Module içinde __dirname oluştur
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const SESSION_DIR = path.join(__dirname, "sessions");
+console.log(`📁 Session Directory: ${SESSION_DIR}`);
 
 const { Client, LocalAuth } = pkg;
 
@@ -58,7 +68,10 @@ const handleCreateSession = (ws, taskId) => {
 
   try {
     const client = new Client({
-      authStrategy: new LocalAuth({ clientId: taskId }),
+      authStrategy: new LocalAuth({
+        clientId: taskId,
+        dataPath: SESSION_DIR,
+      }),
     });
 
     client.on("qr", (qr) => sendMessage(ws, "qr", { qr, taskId }));
