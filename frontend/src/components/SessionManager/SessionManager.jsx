@@ -139,7 +139,11 @@ function AuthenticationModal({ onClose, taskId }) {
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Oturum Kimlik Doğrulama</h5>
-            <button className="btn-close" onClick={onClose}></button>
+            <button
+              className="btn-close"
+              disabled={!qrCode}
+              onClick={handleCancel}
+            ></button>
           </div>
           <div className="modal-body">
             {error && (
@@ -162,7 +166,11 @@ function AuthenticationModal({ onClose, taskId }) {
             </div>
           </div>
           <div className="modal-footer">
-            <button className="btn btn-secondary" onClick={handleCancel}>
+            <button
+              className="btn btn-secondary"
+              disabled={!qrCode}
+              onClick={handleCancel}
+            >
               İptal
             </button>
           </div>
